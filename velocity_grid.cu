@@ -23,7 +23,8 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
 {
 	int** int_arr = &int_params;
 //	float** d_arr = &float_params;
-  int i, j, k, index, index1, n_pnt = 0;
+  int i, j, k, index, index1;
+  n_pnt = 0;
   
   assert (n_points.x > 0 && n_points.y > 0 && n_points.z > 0);
   assert (v_min.x < v_max.x && v_min.y < v_max.y && v_min.z < v_max.z);
