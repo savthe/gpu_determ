@@ -20,6 +20,7 @@
 Options options;
 const Options& opts = options;
 
+
 int main()
 {
 	load_options(options, "gpu.conf");
@@ -38,13 +39,17 @@ int main()
 	float * correction_array;
 	init_correction_array (&correction_array, d_vgrid, opts);
 
-  float * b;
-  float * a;
-  float * h_f;
+	float * a;
+	float * b;
+  	init_matrices (d_vgrid, &b, &a, opts);
+
+  float * h_f = new float[opts.nxyz*opts.npx];
+  float * h_inverse_integral = new float[opts.nxyz*opts.npx];
+  float * h_direct_integral = new float[opts.nxyz*opts.npx];
   float * d_f;
-  float * h_inverse_integral;
+//  float * h_inverse_integral;
   float * d_inverse_integral;
-  float * h_direct_integral;
+//  float * h_direct_integral;
   float * d_direct_integral;
   int index, step, out_step = 5;
 
@@ -60,22 +65,17 @@ int main()
 
   int ix;
 
-  GpuTimer timer;
 
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
   //cudaEventRecord(start, 0);
 
-  timer.start();
-  init_matrices (d_vgrid, &b, &a, opts);
-  timer.stop();
   
   //cudaEventRecord(stop, 0);
   //cudaEventSynchronize(stop);
   //cudaEventElapsedTime(&elapsedTime, start, stop);
 
-  printf ("MATRICES INITIALIZATION TOOK %f MS!\n", timer.elapsed());
 
 
   cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
@@ -83,9 +83,9 @@ int main()
   cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_time,  sizeof (float));
 
-  h_f = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
-  h_direct_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
-  h_inverse_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
+//  h_f = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
+ // h_direct_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
+  //h_inverse_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
 
 
   /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 

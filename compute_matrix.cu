@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "velocity.h"
 #include "compute_matrix.h"
+#include "gputimer.hpp"
 #include <math.h>
 
 
@@ -562,6 +563,9 @@ __global__ void store_matrix_elements (const VelocityGrid vgrid, float * b, floa
 
 void init_matrices (const VelocityGrid& vgrid, float ** b, float ** a, const Options& opts)
 {
+	
+  	GpuTimer timer;
+  	timer.start();
   dim3 dg, db;
   
   dg.x = N_X;
@@ -590,4 +594,7 @@ void init_matrices (const VelocityGrid& vgrid, float ** b, float ** a, const Opt
 	  cudaGetErrorString (cudaGetLastError ()));
   
   cudaThreadSynchronize();
+
+  	timer.stop();
+	printf ("MATRICES INITIALIZATION TOOK %f MS!\n", timer.elapsed());
 }
