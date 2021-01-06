@@ -26,9 +26,10 @@ int main()
 	VelocityGrid h_vgrid, d_vgrid;
 
   /* VELOCITY GRID INITIALIZATION */
-  IntVector n_points = {opts.nx, opts.ny, opts.nz};
-  DVector v_min = {-5.0, -5.0, -5.0};
-  DVector v_max = {5.0, 5.0, 5.0};
+  //IntVector n_points = {opts.nx, opts.ny, opts.nz};
+	Vector3i n_points(opts.nx, opts.ny, opts.nz);
+	Vector3f v_min = {-5.0, -5.0, -5.0};
+	Vector3f v_max = {5.0, 5.0, 5.0};
   float R = 16.5; // RADIUS OF SPHERE
   /*  VELOCITY GRID INITIALIZATION */
 

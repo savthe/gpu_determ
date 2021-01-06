@@ -6,7 +6,7 @@
 class VelocityGrid
 {
 public:
-	void init(IntVector n_points, DVector v_min, DVector v_max, float R);
+	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 	int n_pnt;
 	float* w;
 	int n_w;

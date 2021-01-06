@@ -39,7 +39,7 @@
 #include "options.hpp"
 
 
-void init_velocity_grid (VelocityGrid&, IntVector n_points, DVector v_min, DVector v_max, float R);
+//void init_velocity_grid (VelocityGrid&, Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 
 void init_device_velocity_grid (const VelocityGrid&, VelocityGrid&);
 

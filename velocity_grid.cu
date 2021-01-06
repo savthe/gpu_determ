@@ -3,7 +3,7 @@
 #include "velocity.h"
 
 
-bool check_if_point_is_in_domain (IntVector n_points, DVector v_min, DVector v_max,
+bool check_if_point_is_in_domain (Vector3i n_points, Vector3f v_min, Vector3f v_max,
 			                     int i, int j, int k, float R)
 {
 	float u = (v_max.x - v_min.x) * (2*i + 1 - n_points.x) / 2. / n_points.x; 
@@ -14,7 +14,7 @@ bool check_if_point_is_in_domain (IntVector n_points, DVector v_min, DVector v_m
 }
 
 
-void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float R)
+void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R)
 {
   
 	assert (n_points.x > 0 && n_points.y > 0 && n_points.z > 0);
@@ -46,9 +46,9 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
 	max_v = v_max.y;
 	max_w = v_max.z;
 
-	d_u = (max_u - min_u) / n_u;//N_U (*int_arr);
-	d_v = (max_v - min_v) / n_v;//N_V (*int_arr);
-	d_w = (max_w - min_w) / n_w;//N_W (*int_arr);
+	d_u = (max_u - min_u) / n_u;
+	d_v = (max_v - min_v) / n_v;
+	d_w = (max_w - min_w) / n_w;
 
 	d3v = d_u*d_v*d_w;
   
