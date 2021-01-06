@@ -56,7 +56,6 @@ int main()
   int ix;
 
 
-  //init_velocity_grid (h_vgrid, n_points, v_min, v_max, R);
   h_vgrid.init(n_points, v_min, v_max, R);
 
 
@@ -78,12 +77,9 @@ int main()
   printf ("MATRICES INITIALIZATION TOOK %f MS!\n", elapsedTime);
 
 
-  cudaMalloc ((void **) &d_f, 
-	      opts.nxyz * opts.npx * sizeof (float));
-  cudaMalloc ((void **) &d_direct_integral, 
-	      opts.nxyz * opts.npx * sizeof (float));
-  cudaMalloc ((void **) &d_inverse_integral, 
-	      opts.nxyz * opts.npx * sizeof (float));
+  cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
+  cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
+  cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_time,  sizeof (float));
 
   h_f = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
@@ -93,19 +89,16 @@ int main()
 
   /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
   /*              h_f = F(u,v,w)                     */ 
-  for (i = 0, index = 0; i < N_X; i++) 
-    for (j = 0; j < N_Y; j++) 
-      for (k = 0; k < N_Z; k++, index++) {
+	for (i = 0, index = 0; i < N_X; i++) 
+		for (j = 0; j < N_Y; j++) 
+			for (k = 0; k < N_Z; k++, index++) {
+				float u = h_vgrid.u[i];
+				float v = h_vgrid.v[j];
+				float w = h_vgrid.w[k];
 	
-	float u = h_vgrid.u[i];//U_1 (h_vgrid.float_params, h_vgrid.int_params)[i];
-	float v = h_vgrid.v[j];//V_1 (h_vgrid.float_params, h_vgrid.int_params)[j];
-	float w = h_vgrid.w[k];//W_1 (h_vgrid.float_params, h_vgrid.int_params)[k];
-	
-	for (ix = 0; ix < opts.npx; ix++) {
-	  h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
-	  //	  h_f[index * opts.npx + ix] += exp (-(u-u2)*(u-u2)  - (v-v2)*(v-v2) - w*w); 
-	}
-      }
+				for (ix = 0; ix < opts.npx; ix++) 
+					h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
+			}
   
   /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
   
@@ -129,47 +122,6 @@ int main()
       cudaMemcpy (h_f, d_f, 
 		  opts.nxyz * opts.npx * sizeof (float),
 		  cudaMemcpyDeviceToHost);
-      /*
-      sprintf (filename_x, "RES1/x_data_%03d.dat", step);
-      sprintf (filename_y, "RES1/y_data_%03d.dat", step);
-      sprintf (filename_z, "RES1/z_data_%03d.dat", step);
-
-      fp_x = fopen (filename_x, "w+");
-      fprintf (fp_x, "T=%f\n", h_time);
-      for (i = 0; i < N_X; i++) {
-	fprintf (fp_x, "%g", U_1 (h_float_params, h_int_params)[i]);
-	for (j = 0; j < N_Y; j++)
-	  for (k = 0; k < N_Z; k++) {
-	    fprintf (fp_x, " %g", h_f[i * N_YZ + j * N_Z + k]);
-	  }
-	fprintf (fp_x, "\n");
-      }
-      fclose (fp_x);
-
-      fp_y = fopen (filename_y, "w+");
-      fprintf (fp_y, "T=%f\n", h_time);
-      for (j = 0; j < N_Y; j++) {
-	fprintf (fp_y, "%g", V_1 (h_float_params, h_int_params)[j]);
-	for (i = 0; i < N_X; i++)
-	  for (k = 0; k < N_Z; k++) {
-	    fprintf (fp_y, " %g", h_f[i * N_YZ + j * N_Z + k]);
-	  }
-	fprintf (fp_y, "\n");
-      }
-      fclose (fp_y);
-
-      fp_z = fopen (filename_z, "w+");
-      fprintf (fp_z, "T=%f\n", h_time);
-      for (k = 0; k < N_Z; k++) {
-	fprintf (fp_z, "%g", W_1 (h_float_params, h_int_params)[k]);
-	for (j = 0; j < N_Y; j++)
-	  for (i = 0; i < N_X; i++) {
-	    fprintf (fp_z, " %g", h_f[i * N_YZ + j * N_Z + k]);
-	  }
-	fprintf (fp_z, "\n");
-      }
-      fclose (fp_z);
-      */
     }
     evolve_colisions (d_f, d_direct_integral, d_inverse_integral,
 		      b, a, correction_array, opts);
