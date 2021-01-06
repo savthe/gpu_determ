@@ -16,7 +16,7 @@
 //#define N_U(v) ((v)[1])
 //#define N_V(v) ((v)[2])
 //#define N_W(v) ((v)[3])
-#define N_UVW(v) ((v)[4])
+//#define N_UVW(v) ((v)[4])
 //#define U_INDEX(v) (&((v)[5]))
 //#define V_INDEX(v) (&((v)[5+((v)[0])]))
 //#define W_INDEX(v) (&((v)[5+2*((v)[0])]))

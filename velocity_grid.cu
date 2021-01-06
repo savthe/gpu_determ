@@ -47,7 +47,8 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
   n_v = n_points.y;
   //N_W (*int_arr)   = n_points.z;
   n_w = n_points.z;
-  N_UVW (*int_arr) = n_points.x * n_points.y * n_points.z;
+  //N_UVW (*int_arr) = n_points.x * n_points.y * n_points.z;
+  n_uvw = n_points.x * n_points.y * n_points.z;
 
   
   /*

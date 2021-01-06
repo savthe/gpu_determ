@@ -20,6 +20,7 @@ public:
 	int* u_index;
 	int* v_index;
 	int* w_index;
+	int n_uvw;
 
 	float min_u, min_v, min_w;
 	float max_u, max_v, max_w;

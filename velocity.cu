@@ -72,7 +72,7 @@ void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgr
 	int** d_int_params = &d_vgrid.int_params;
   cudaMalloc ((void **) d_int_params, 
 	      (5 + 4 * h_vgrid.n_pnt + 
-	      N_UVW (h_vgrid.int_params)) * sizeof (int));
+	      h_vgrid.n_uvw) * sizeof (int));
 	/*
   cudaMalloc ((void **) d_int_params, 
 	      (5 + 4 * N_PNT (h_vgrid.int_params) + 
@@ -82,7 +82,7 @@ void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgr
 
   cudaMemcpy (*d_int_params, h_vgrid.int_params,
 	      (5 + 4 * h_vgrid.n_pnt + 
-	      N_UVW (h_vgrid.int_params)) * sizeof (int),
+	      h_vgrid.n_uvw) * sizeof (int),
 	      cudaMemcpyHostToDevice);
 
 
