@@ -12,7 +12,7 @@
 #include "velocity_grid.hpp"
 
 // from int_arr
-#define N_PNT(v) ((v)[0])
+//#define N_PNT(v) ((v)[0])
 //#define N_U(v) ((v)[1])
 //#define N_V(v) ((v)[2])
 //#define N_W(v) ((v)[3])
