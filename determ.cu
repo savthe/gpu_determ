@@ -79,15 +79,6 @@ int main()
 	cudaMalloc ((void **) &d_time,  sizeof (float));
 	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
 
-  cudaEvent_t start, stop;
-
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-
-
-
-
-  
   
 	GpuTimer timer;
 	timer.start();
@@ -110,8 +101,6 @@ int main()
 	cudaThreadSynchronize ();
 
 	timer.stop();
-//	cudaEventRecord(stop, 0);
-//	cudaEventSynchronize(stop);
 
 	printf ("COLLISIONS EVOLVED: %s\n", cudaGetErrorString (cudaGetLastError ()));
 
@@ -122,53 +111,42 @@ int main()
 
 #if 1
   /* PRINTING THE RESULTS OF COMPUTATIONS */ 
-  for (int index = 0; index < opts.nxyz; index ++) 
-    //    if (h_f[index]>1.e-1)
-    if (h_vgrid.u_index[index] < h_vgrid.n_u/2 && 
-	h_vgrid.v_index[index] < h_vgrid.n_v/2 &&
-	h_vgrid.w_index[index] < h_vgrid.n_w/2)
-	//W_INDEX (h_vgrid.int_params)[index] < h_vgrid.n_w/2)
-    //  printf ("INDEX=%d, I=%d, J=%d, K=%d, F=%e, DC=%e, IC=%e, CI=%e, ACCURACY=%e\n", 
-	fresults << index << ' ' // index
-		<< index / N_YZ << ' ' // I
-		<< (index % N_YZ) / N_Z << ' ' // J
-	    << (index % N_YZ) % N_Z << ' ' // K
-		<< h_f[index] << ' ' // F
-		<< h_direct_integral[index] << ' ' // DC
-		<< h_inverse_integral[index] << ' ' // IC
-	    << - h_f[index]*h_direct_integral[index] + h_inverse_integral[index] << ' ' // CI
-	    << -h_f[index]*h_direct_integral[index]/h_inverse_integral[index]+1.0 << std::endl; //ACCURACY
+	for (int index = 0; index < opts.nxyz; index ++) 
+		if (h_vgrid.u_index[index] < h_vgrid.n_u/2 && h_vgrid.v_index[index] < h_vgrid.n_v/2 && h_vgrid.w_index[index] < h_vgrid.n_w/2)
+			fresults << index << ' ' // index
+			<< index / N_YZ << ' ' // I
+			<< (index % N_YZ) / N_Z << ' ' // J
+	   		 << (index % N_YZ) % N_Z << ' ' // K
+			<< h_f[index] << ' ' // F
+			<< h_direct_integral[index] << ' ' // DC
+			<< h_inverse_integral[index] << ' ' // IC
+	   		<< - h_f[index]*h_direct_integral[index] + h_inverse_integral[index] << ' ' // CI
+	   		<< -h_f[index]*h_direct_integral[index]/h_inverse_integral[index]+1.0 << std::endl; //ACCURACY
   /* PRINTING THE RESULTS OF COMPUTATIONS */ 
 #endif
   fresults.close();
 
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
-  float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
-  for (int i = 0, index = 0; i < N_X; i++) 
-    for (int j = 0; j < N_Y; j++)
-      for (int k = 0; k < N_Z; k++, index++) {
-	float ci = - h_f[index] * h_direct_integral[index] + 
-	  h_inverse_integral[index];
-	float u = h_vgrid.u[i];//U_1 (h_vgrid.float_params, h_vgrid.int_params)[i];
-	float v = h_vgrid.v[j];//V_1 (h_vgrid.float_params, h_vgrid.int_params)[j];
-	float w = h_vgrid.w[k];
-	mom0 += ci * h_vgrid.d3v;
-	momU += ci * u * h_vgrid.d3v;
-	momV += ci * v * h_vgrid.d3v;
-	momW += ci * w * h_vgrid.d3v;
-	mom2 += ci * (u*u + v*v + w*w) * h_vgrid.d3v;
-      }
+	float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
+	for (int i = 0, index = 0; i < N_X; i++) 
+	for (int j = 0; j < N_Y; j++)
+	for (int k = 0; k < N_Z; k++, index++) 
+	{
+		float ci = - h_f[index] * h_direct_integral[index] + h_inverse_integral[index];
+		float u = h_vgrid.u[i];
+		float v = h_vgrid.v[j];
+		float w = h_vgrid.w[k];
+		mom0 += ci * h_vgrid.d3v;
+		momU += ci * u * h_vgrid.d3v;
+		momV += ci * v * h_vgrid.d3v;
+		momW += ci * w * h_vgrid.d3v;
+		mom2 += ci * (u*u + v*v + w*w) * h_vgrid.d3v;
+	}
 
-  printf ("M0=%e, MU=%e, MV=%e, MW=%e, M2=%e\n", mom0, momU,
-	  momV, momW, mom2);
+	printf ("M0=%e, MU=%e, MV=%e, MW=%e, M2=%e\n", mom0, momU, momV, momW, mom2);
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 
-//  cudaEventElapsedTime(&elapsedTime, start, stop);
-
   printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", timer.elapsed());
-
-  cudaEventDestroy (start);
-  cudaEventDestroy (stop);
 
   cudaFree (d_f);
   cudaFree (d_direct_integral);
