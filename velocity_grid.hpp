@@ -17,6 +17,8 @@ public:
 	float* u;
 	int n_u;
 //	int* vindex;
+	int* u_index;
+	int* v_index;
 	int* w_index;
 
 	float min_u, min_v, min_w;

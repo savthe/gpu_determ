@@ -200,8 +200,8 @@ int main()
   /* PRINTING THE RESULTS OF COMPUTATIONS */ 
   for (index = 0; index < opts.nxyz; index ++) 
     //    if (h_f[index]>1.e-1)
-    if (U_INDEX (h_vgrid.int_params)[index] < h_vgrid.n_u/2 && 
-	V_INDEX (h_vgrid.int_params)[index] < h_vgrid.n_v/2 &&
+    if (h_vgrid.u_index[index] < h_vgrid.n_u/2 && 
+	h_vgrid.v_index[index] < h_vgrid.n_v/2 &&
 	h_vgrid.w_index[index] < h_vgrid.n_w/2)
 	//W_INDEX (h_vgrid.int_params)[index] < h_vgrid.n_w/2)
     //  printf ("INDEX=%d, I=%d, J=%d, K=%d, F=%e, DC=%e, IC=%e, CI=%e, ACCURACY=%e\n", 
