@@ -21,7 +21,7 @@ bool check_if_point_is_in_domain (IntVector n_points,
 
 void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float R)
 {
-	int** int_arr = &int_params;
+//	int** int_arr = &int_params;
 //	float** d_arr = &float_params;
   int i, j, k, index, index1;
   n_pnt = 0;
@@ -36,9 +36,9 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
 					 i, j, k, R))
 	  n_pnt++;
   
-  (*int_arr) = (int *) malloc ((5 + n_pnt * 4 + 
-                                n_points.x * n_points.y * n_points.z) 
-                               * sizeof (int));
+ // (*int_arr) = (int *) malloc ((5 + n_pnt * 4 + 
+  //                              n_points.x * n_points.y * n_points.z) 
+   //                            * sizeof (int));
 
 //  N_PNT (*int_arr) = n_pnt;
   //N_U (*int_arr)   = n_points.x;

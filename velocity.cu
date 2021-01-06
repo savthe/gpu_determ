@@ -69,10 +69,13 @@ void init_correction_array (float ** correction_array, const VelocityGrid& vgrid
 void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgrid)
 {
 	d_vgrid = h_vgrid;
-	int** d_int_params = &d_vgrid.int_params;
+	//int** d_int_params = &d_vgrid.int_params;
+
+	/*
   cudaMalloc ((void **) d_int_params, 
 	      (5 + 4 * h_vgrid.n_pnt + 
 	      h_vgrid.n_uvw) * sizeof (int));
+		  */
 	/*
   cudaMalloc ((void **) d_int_params, 
 	      (5 + 4 * N_PNT (h_vgrid.int_params) + 
@@ -80,10 +83,12 @@ void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgr
 		  */
 
 
+	/*
   cudaMemcpy (*d_int_params, h_vgrid.int_params,
 	      (5 + 4 * h_vgrid.n_pnt + 
 	      h_vgrid.n_uvw) * sizeof (int),
 	      cudaMemcpyHostToDevice);
+		  */
 
 
 	cudaMalloc ((void **) &d_vgrid.u_index, h_vgrid.n_pnt * sizeof (float));
@@ -108,12 +113,12 @@ void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgr
 
 void free_host_velocity_grid (VelocityGrid& vgrid)
 {
-  free (vgrid.int_params);
+  //free (vgrid.int_params);
  // free (vgrid.float_params);
 }
 
 void free_device_velocity_grid (VelocityGrid& vgrid)
 {
-  cudaFree (vgrid.int_params);
+ // cudaFree (vgrid.int_params);
   //cudaFree (vgrid.float_params);
 }
