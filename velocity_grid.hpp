@@ -8,15 +8,12 @@ class VelocityGrid
 public:
 	void init(IntVector n_points, DVector v_min, DVector v_max, float R);
 	int n_pnt;
-	//int* int_params;
-//	float* float_params;
 	float* w;
 	int n_w;
 	float* v;
 	int n_v;
 	float* u;
 	int n_u;
-//	int* vindex;
 	int* u_index;
 	int* v_index;
 	int* w_index;

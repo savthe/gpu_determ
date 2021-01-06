@@ -104,49 +104,37 @@ int main()
   
   
 
-  cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float),
-	      cudaMemcpyHostToDevice);
-  cudaMemcpy (d_time, &h_time, sizeof (float),
-	      cudaMemcpyHostToDevice);
+	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
+	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
   
   
-  cudaThreadSynchronize ();
-  cudaEventRecord(start, 0);
+	cudaThreadSynchronize ();
+	cudaEventRecord(start, 0);
 #if 1  
   
-  for (step = 0; step <= 0; step ++) {
-    cudaMemcpy (&h_time, d_time, sizeof (float),
-		cudaMemcpyDeviceToHost);
-    printf ("STEP=%d, TIME=%f\n", step, time);
-    if (step % out_step == 0) {
-      cudaMemcpy (h_f, d_f, 
-		  opts.nxyz * opts.npx * sizeof (float),
-		  cudaMemcpyDeviceToHost);
-    }
-    evolve_colisions (d_f, d_direct_integral, d_inverse_integral,
-		      b, a, correction_array, opts);
-    relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5,
-	     d_time, opts);
-  }
+	for (step = 0; step <= 0; step ++) 
+	{
+		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
+		printf ("STEP=%d, TIME=%f\n", step, time);
+		if (step % out_step == 0) 
+			cudaMemcpy (h_f, d_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyDeviceToHost);
+
+		evolve_colisions (d_f, d_direct_integral, d_inverse_integral, b, a, correction_array, opts);
+		relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5, d_time, opts);
+	}
 #endif
   
-  cudaThreadSynchronize ();
+	cudaThreadSynchronize ();
 
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
 
-  printf ("COLLISIONS EVOLVED: %s\n", 
-	  cudaGetErrorString (cudaGetLastError ()));
+	printf ("COLLISIONS EVOLVED: %s\n", cudaGetErrorString (cudaGetLastError ()));
 
-  cudaMemcpy (h_direct_integral, d_direct_integral, 
-	      opts.nxyz * sizeof (float),
-	      cudaMemcpyDeviceToHost);
+	cudaMemcpy (h_direct_integral, d_direct_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
+	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 
-  cudaMemcpy (h_inverse_integral, d_inverse_integral, 
-	      opts.nxyz * sizeof (float),
-	      cudaMemcpyDeviceToHost);
-
-  std::ofstream fresults("results.out");
+	std::ofstream fresults("results.out");
 
 #if 1
   /* PRINTING THE RESULTS OF COMPUTATIONS */ 
@@ -178,9 +166,7 @@ int main()
 	float ci = - h_f[index] * h_direct_integral[index] + 
 	  h_inverse_integral[index];
 	float u = h_vgrid.u[i];//U_1 (h_vgrid.float_params, h_vgrid.int_params)[i];
-	//float v = V_1 (h_vgrid.float_params, h_vgrid.int_params)[j];
 	float v = h_vgrid.v[j];//V_1 (h_vgrid.float_params, h_vgrid.int_params)[j];
-	//float w = W_1 (h_vgrid.float_params, h_vgrid.int_params)[k];
 	float w = h_vgrid.w[k];
 	mom0 += ci * h_vgrid.d3v;
 	momU += ci * u * h_vgrid.d3v;
@@ -212,18 +198,9 @@ int main()
   cudaFree (b);
   cudaFree (a);
 
-  /*
-  int * h_int_params = h_vgrid.int_params;
-  float * h_float_params = h_vgrid.float_params;
-  int * d_int_params = d_vgrid.int_params;
-  float * d_float_params = d_vgrid.float_params;
-  */
   free_device_velocity_grid (d_vgrid);
   free_host_velocity_grid (h_vgrid);
-//  free_device_velocity_grid (&d_int_params, &d_float_params);
 
- // free_host_velocity_grid (&h_int_params, &h_float_params);
-
-  printf ("END_PROGRAM: %s\n", 
-	  cudaGetErrorString (cudaGetLastError ()));
+	printf ("END_PROGRAM: %s\n", 
+	cudaGetErrorString (cudaGetLastError ()));
 }
