@@ -14,6 +14,36 @@ bool check_if_point_is_in_domain (Vector3i n_points, Vector3f v_min, Vector3f v_
 }
 
 
+VelocityGrid::VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r)
+{
+	init(n_points, v_min, v_max, r);
+}
+
+VelocityGrid VelocityGrid::device_clone() 
+{
+	VelocityGrid dg = *this;
+
+	cudaMalloc ((void **) &dg.u_index, n_pnt * sizeof (float));
+	cudaMemcpy (dg.u_index, u_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+
+	cudaMalloc ((void **) &dg.v_index, n_pnt * sizeof (float));
+	cudaMemcpy (dg.v_index, v_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+
+	cudaMalloc ((void **) &dg.w_index, n_pnt * sizeof (float));
+	cudaMemcpy (dg.w_index, w_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+
+	cudaMalloc ((void **) &dg.u, n_u * sizeof (float));
+	cudaMemcpy (dg.u, u, n_u * sizeof(float), cudaMemcpyHostToDevice); 
+
+	cudaMalloc ((void **) &dg.w, n_w * sizeof (float));
+	cudaMemcpy (dg.w, w, n_w * sizeof(float), cudaMemcpyHostToDevice); 
+
+	cudaMalloc ((void **) &dg.v, n_v * sizeof (float));
+	cudaMemcpy (dg.v, v, n_v * sizeof(float), cudaMemcpyHostToDevice); 
+
+	return dg;
+}
+
 void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R)
 {
   

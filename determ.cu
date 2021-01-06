@@ -23,16 +23,16 @@ int main()
 {
 	load_options(options, "gpu.conf");
 	print_options(options);
-	VelocityGrid h_vgrid, d_vgrid;
 
   /* VELOCITY GRID INITIALIZATION */
-  //IntVector n_points = {opts.nx, opts.ny, opts.nz};
-	Vector3i n_points(opts.nx, opts.ny, opts.nz);
-	Vector3f v_min = {-5.0, -5.0, -5.0};
-	Vector3f v_max = {5.0, 5.0, 5.0};
-  float R = 16.5; // RADIUS OF SPHERE
+	const Vector3i n_points(opts.nx, opts.ny, opts.nz);
+	const Vector3f v_min(-5.0, -5.0, -5.00);
+	const Vector3f v_max(5.0, 5.0, 5.0);
+	const float R = 16.5; // RADIUS OF SPHERE
   /*  VELOCITY GRID INITIALIZATION */
 
+	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
+	VelocityGrid d_vgrid = h_vgrid.device_clone();
   float * b;
   float * a;
   float * h_f;
@@ -57,10 +57,9 @@ int main()
   int ix;
 
 
-  h_vgrid.init(n_points, v_min, v_max, R);
 
 
-  init_device_velocity_grid (h_vgrid, d_vgrid);
+//  init_device_velocity_grid (h_vgrid, d_vgrid);
 
   init_correction_array (&correction_array, d_vgrid, opts);
 
