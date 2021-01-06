@@ -55,7 +55,7 @@ int main()
 	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
 	VelocityGrid d_vgrid = h_vgrid.device_clone();
 
-	float * h_f = init_f(h_vgrid);//new float[opts.nxyz*opts.npx];
+	float * h_f = init_f(h_vgrid);
 	float * d_f;
 	cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
 	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
@@ -74,7 +74,7 @@ int main()
 	cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
 	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
 
-  int index, step, out_step = 5;
+  int index,out_step = 5;
 
   cudaEvent_t start, stop;
   float elapsedTime;
@@ -94,11 +94,11 @@ int main()
 	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
   
   
-	cudaThreadSynchronize ();
-	cudaEventRecord(start, 0);
+	GpuTimer timer;
+	timer.start();
 #if 1  
   
-	for (step = 0; step <= 0; step ++) 
+	for (int step = 0; step <= 0; ++step) 
 	{
 		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
 		printf ("STEP=%d, TIME=%f\n", step, time);
@@ -112,8 +112,9 @@ int main()
   
 	cudaThreadSynchronize ();
 
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
+	timer.stop();
+//	cudaEventRecord(stop, 0);
+//	cudaEventSynchronize(stop);
 
 	printf ("COLLISIONS EVOLVED: %s\n", cudaGetErrorString (cudaGetLastError ()));
 
@@ -165,9 +166,9 @@ int main()
 	  momV, momW, mom2);
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 
-  cudaEventElapsedTime(&elapsedTime, start, stop);
+//  cudaEventElapsedTime(&elapsedTime, start, stop);
 
-  printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", elapsedTime);
+  printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", timer.elapsed());
 
   cudaEventDestroy (start);
   cudaEventDestroy (stop);
