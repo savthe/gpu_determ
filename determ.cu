@@ -23,8 +23,8 @@ const Options& opts = options;
 float* init_f(const VelocityGrid& h_vgrid)
 {
 	float * f = new float[opts.nxyz*opts.npx];
-	float u1 = 1.75;
-	float v1 = 0.25;
+	const float u1 = 1.75;
+	const float v1 = 0.25;
 
 	for (int i = 0, index = 0; i < opts.nx; i++) 
 		for (int j = 0; j < opts.ny; j++) 
@@ -55,6 +55,11 @@ int main()
 	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
 	VelocityGrid d_vgrid = h_vgrid.device_clone();
 
+	float * h_f = init_f(h_vgrid);//new float[opts.nxyz*opts.npx];
+	float * d_f;
+	cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
+	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
+
 	float * correction_array;
 	init_correction_array (&correction_array, d_vgrid, opts);
 
@@ -62,12 +67,13 @@ int main()
 	float * b;
   	init_matrices (d_vgrid, &b, &a, opts);
 
-  float * h_f = init_f(h_vgrid);//new float[opts.nxyz*opts.npx];
-  float * h_inverse_integral = new float[opts.nxyz*opts.npx];
-  float * h_direct_integral = new float[opts.nxyz*opts.npx];
-  float * d_f;
-  float * d_inverse_integral;
-  float * d_direct_integral;
+	float * h_inverse_integral = new float[opts.nxyz*opts.npx];
+	float * h_direct_integral = new float[opts.nxyz*opts.npx];
+	float * d_inverse_integral;
+	float * d_direct_integral;
+	cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
+	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
+
   int index, step, out_step = 5;
 
   cudaEvent_t start, stop;
@@ -78,39 +84,13 @@ int main()
   float * d_time;
 
 
-  int ix;
-
-
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
-  cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
-  cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
-  cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_time,  sizeof (float));
 
 
 
-  /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
-  /*              h_f = F(u,v,w)                     */ 
-  /*
-	for (i = 0, index = 0; i < opts.nx; i++) 
-		for (j = 0; j < opts.ny; j++) 
-			for (k = 0; k < opts.nz; k++, index++) {
-				float u = h_vgrid.u[i];
-				float v = h_vgrid.v[j];
-				float w = h_vgrid.w[k];
-	
-				for (ix = 0; ix < opts.npx; ix++) 
-					h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
-			}
-			*/
-  
-  /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
-  
-  
-
-	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
 	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
   
   
