@@ -15,6 +15,7 @@
 #include "collision_integral.h"
 #include "options.hpp"
 #include "velocity_grid.hpp"
+#include "gputimer.hpp"
 
 Options options;
 const Options& opts = options;
@@ -24,15 +25,19 @@ int main()
 	load_options(options, "gpu.conf");
 	print_options(options);
 
-  /* VELOCITY GRID INITIALIZATION */
+	/* VELOCITY GRID INITIALIZATION */
 	const Vector3i n_points(opts.nx, opts.ny, opts.nz);
 	const Vector3f v_min(-5.0, -5.0, -5.00);
 	const Vector3f v_max(5.0, 5.0, 5.0);
 	const float R = 16.5; // RADIUS OF SPHERE
-  /*  VELOCITY GRID INITIALIZATION */
+	/*  VELOCITY GRID INITIALIZATION */
 
 	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
 	VelocityGrid d_vgrid = h_vgrid.device_clone();
+
+	float * correction_array;
+	init_correction_array (&correction_array, d_vgrid, opts);
+
   float * b;
   float * a;
   float * h_f;
@@ -41,7 +46,6 @@ int main()
   float * d_inverse_integral;
   float * h_direct_integral;
   float * d_direct_integral;
-  float * correction_array;
   int index, step, out_step = 5;
 
   cudaEvent_t start, stop;
@@ -56,25 +60,22 @@ int main()
 
   int ix;
 
-
-
-
-//  init_device_velocity_grid (h_vgrid, d_vgrid);
-
-  init_correction_array (&correction_array, d_vgrid, opts);
+  GpuTimer timer;
 
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
-  cudaEventRecord(start, 0);
+  //cudaEventRecord(start, 0);
 
+  timer.start();
   init_matrices (d_vgrid, &b, &a, opts);
+  timer.stop();
   
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&elapsedTime, start, stop);
+  //cudaEventRecord(stop, 0);
+  //cudaEventSynchronize(stop);
+  //cudaEventElapsedTime(&elapsedTime, start, stop);
 
-  printf ("MATRICES INITIALIZATION TOOK %f MS!\n", elapsedTime);
+  printf ("MATRICES INITIALIZATION TOOK %f MS!\n", timer.elapsed());
 
 
   cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
