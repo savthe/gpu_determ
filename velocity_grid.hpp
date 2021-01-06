@@ -16,6 +16,7 @@ public:
 	int n_v;
 	float* u;
 	int n_u;
+//	int* vindex;
 
 	float min_u, min_v, min_w;
 	float max_u, max_v, max_w;
