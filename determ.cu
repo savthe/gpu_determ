@@ -20,6 +20,25 @@
 Options options;
 const Options& opts = options;
 
+float* init_f(const VelocityGrid& h_vgrid)
+{
+	float * f = new float[opts.nxyz*opts.npx];
+	float u1 = 1.75;
+	float v1 = 0.25;
+
+	for (int i = 0, index = 0; i < opts.nx; i++) 
+		for (int j = 0; j < opts.ny; j++) 
+			for (int k = 0; k < opts.nz; k++, index++) {
+				float u = h_vgrid.u[i];
+				float v = h_vgrid.v[j];
+				float w = h_vgrid.w[k];
+	
+				for (int ix = 0; ix < opts.npx; ix++) 
+					f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
+			}
+
+	return f;
+}
 
 int main()
 {
@@ -43,13 +62,11 @@ int main()
 	float * b;
   	init_matrices (d_vgrid, &b, &a, opts);
 
-  float * h_f = new float[opts.nxyz*opts.npx];
+  float * h_f = init_f(h_vgrid);//new float[opts.nxyz*opts.npx];
   float * h_inverse_integral = new float[opts.nxyz*opts.npx];
   float * h_direct_integral = new float[opts.nxyz*opts.npx];
   float * d_f;
-//  float * h_inverse_integral;
   float * d_inverse_integral;
-//  float * h_direct_integral;
   float * d_direct_integral;
   int index, step, out_step = 5;
 
@@ -60,8 +77,6 @@ int main()
   float h_time = 0;
   float * d_time;
 
-  float u1 = 1.75;
-  float v1 = 0.25;
 
   int ix;
 
@@ -69,30 +84,19 @@ int main()
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
-  //cudaEventRecord(start, 0);
-
-  
-  //cudaEventRecord(stop, 0);
-  //cudaEventSynchronize(stop);
-  //cudaEventElapsedTime(&elapsedTime, start, stop);
-
-
-
   cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
   cudaMalloc ((void **) &d_time,  sizeof (float));
 
-//  h_f = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
- // h_direct_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
-  //h_inverse_integral = (float *) malloc (opts.nxyz * opts.npx * sizeof (float));
 
 
   /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
   /*              h_f = F(u,v,w)                     */ 
-	for (i = 0, index = 0; i < N_X; i++) 
-		for (j = 0; j < N_Y; j++) 
-			for (k = 0; k < N_Z; k++, index++) {
+  /*
+	for (i = 0, index = 0; i < opts.nx; i++) 
+		for (j = 0; j < opts.ny; j++) 
+			for (k = 0; k < opts.nz; k++, index++) {
 				float u = h_vgrid.u[i];
 				float v = h_vgrid.v[j];
 				float w = h_vgrid.w[k];
@@ -100,6 +104,7 @@ int main()
 				for (ix = 0; ix < opts.npx; ix++) 
 					h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
 			}
+			*/
   
   /* INITIALIZATION OF THE DISTRIBUTION FUNCTION h_f */ 
   
