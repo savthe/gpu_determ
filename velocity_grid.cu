@@ -108,7 +108,7 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
 	      W_INDEX (*int_arr)[index] = k;
 		  //vindex[index1] = index;
 	      //INDEX (*int_arr)[index1] = index;
-	      INDEX1 (*int_arr)[index] = index1;
+//	      INDEX1 (*int_arr)[index] = index1;
 	      index++;
 	    }
 //	    else 

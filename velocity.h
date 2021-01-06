@@ -20,7 +20,7 @@
 #define U_INDEX(v) (&((v)[5]))
 #define V_INDEX(v) (&((v)[5+((v)[0])]))
 #define W_INDEX(v) (&((v)[5+2*((v)[0])]))
-#define INDEX1(v) (&((v)[5+3*((v)[0])]))
+//#define INDEX1(v) (&((v)[5+3*((v)[0])]))
 //#define INDEX(v) (&((v)[5+4*((v)[0])]))
 
 #define N_X 16
