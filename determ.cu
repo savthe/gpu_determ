@@ -74,30 +74,27 @@ int main()
 	cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
 	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
 
-  int index,out_step = 5;
+	float h_time = 0;
+	float * d_time;
+	cudaMalloc ((void **) &d_time,  sizeof (float));
+	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
 
   cudaEvent_t start, stop;
-  float elapsedTime;
-
-  int i, j, k;
-  float h_time = 0;
-  float * d_time;
-
 
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
 
-  cudaMalloc ((void **) &d_time,  sizeof (float));
 
 
 
-	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
   
   
 	GpuTimer timer;
 	timer.start();
 #if 1  
   
+	constexpr int out_step = 5;
+	
 	for (int step = 0; step <= 0; ++step) 
 	{
 		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
@@ -125,7 +122,7 @@ int main()
 
 #if 1
   /* PRINTING THE RESULTS OF COMPUTATIONS */ 
-  for (index = 0; index < opts.nxyz; index ++) 
+  for (int index = 0; index < opts.nxyz; index ++) 
     //    if (h_f[index]>1.e-1)
     if (h_vgrid.u_index[index] < h_vgrid.n_u/2 && 
 	h_vgrid.v_index[index] < h_vgrid.n_v/2 &&
@@ -147,9 +144,9 @@ int main()
 
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
   float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
-  for (i = 0, index = 0; i < N_X; i++) 
-    for (j = 0; j < N_Y; j++)
-      for (k = 0; k < N_Z; k++, index++) {
+  for (int i = 0, index = 0; i < N_X; i++) 
+    for (int j = 0; j < N_Y; j++)
+      for (int k = 0; k < N_Z; k++, index++) {
 	float ci = - h_f[index] * h_direct_integral[index] + 
 	  h_inverse_integral[index];
 	float u = h_vgrid.u[i];//U_1 (h_vgrid.float_params, h_vgrid.int_params)[i];
