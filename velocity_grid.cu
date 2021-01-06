@@ -59,6 +59,8 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
   v = (float*) malloc(n_v*sizeof(float));
   w = (float*) malloc(n_points.z*sizeof(float));
 
+  w_index = (int*) malloc(n_pnt*sizeof(int));
+
 //  vindex = (int*) malloc(n_points.x*n_points.y*n_points.z*sizeof(int));
 
   /*
@@ -106,7 +108,8 @@ void VelocityGrid::init(IntVector n_points, DVector v_min, DVector v_max, float 
 		  //w0[index] = W_1(*d_arr, *int_arr)[k];
 	      U_INDEX (*int_arr)[index] = i;
 	      V_INDEX (*int_arr)[index] = j;
-	      W_INDEX (*int_arr)[index] = k;
+	      //W_INDEX (*int_arr)[index] = k;
+		  w_index[index] = k;
 		  //vindex[index1] = index;
 	      //INDEX (*int_arr)[index1] = index;
 //	      INDEX1 (*int_arr)[index] = index1;
