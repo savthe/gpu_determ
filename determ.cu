@@ -17,6 +17,8 @@
 #include "velocity_grid.hpp"
 #include "gputimer.hpp"
 
+void clean();
+
 Options options;
 const Options& opts = options;
 
@@ -26,6 +28,9 @@ float* h_inverse_integral;
 float* d_inverse_integral;
 float* h_direct_integral;
 float* d_direct_integral;
+float* a;
+float* b;
+float* correction_array;
 
 VelocityGrid vgrid;
 
@@ -112,15 +117,9 @@ int main()
 	/*  VELOCITY GRID INITIALIZATION */
 
 	vgrid.init(n_points, v_min, v_max, R);
-
 	init_f();
 	init_integrals();
-
-	float * correction_array;
 	init_correction_array (&correction_array, vgrid.device(), opts);
-
-	float * a;
-	float * b;
   	init_matrices (vgrid.device(), &b, &a, opts);
 
 
@@ -129,12 +128,10 @@ int main()
 	cudaMalloc ((void **) &d_time,  sizeof (float));
 	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
 
-  
 	GpuTimer timer;
 	timer.start();
 
 #if 1  
-  
 	constexpr int out_step = 5;
 	
 	for (int step = 0; step <= 0; ++step) 
@@ -148,6 +145,8 @@ int main()
 		relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5, d_time, opts);
 	}
 #endif
+
+	cudaFree(d_time);
   
 	cudaThreadSynchronize ();
 
@@ -158,28 +157,29 @@ int main()
 	cudaMemcpy (h_direct_integral, d_direct_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 
-
 	print_results();
 	print_moments();
 
 
-  printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", timer.elapsed());
+	std::cout << "COLLISION INTEGRAL EVALUATION TOOK " << timer.elapsed() << " MS." << std::endl;
 
-  cudaFree (d_f);
-  cudaFree (d_direct_integral);
-  cudaFree (d_inverse_integral);
-  cudaFree (correction_array);
+	clean();
 
-  free (h_f);
-  free (h_direct_integral);
-  free (h_inverse_integral);
-
-  cudaFree (b);
-  cudaFree (a);
-
-//  free_device_velocity_grid (d_vgrid);
-  //free_host_velocity_grid (h_vgrid);
-
-	printf ("END_PROGRAM: %s\n", 
-	cudaGetErrorString (cudaGetLastError ()));
+	std::cout << "END_PROGRAM: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
 }
+
+void clean()
+{
+	cudaFree (d_f);
+	cudaFree (d_direct_integral);
+	cudaFree (d_inverse_integral);
+	cudaFree (correction_array);
+
+	delete[] h_f;
+	delete[] h_direct_integral;
+	delete[] h_inverse_integral;
+
+	cudaFree (b);
+	cudaFree (a);
+}
+
