@@ -64,37 +64,3 @@ void init_correction_array (float ** correction_array, const DeviceVelocityGrid&
   db.z = 1;
   fill_correction_array <<<dg, db>>> (*correction_array, vgrid, opts);
 }
-
-
-void init_device_velocity_grid (const VelocityGrid& h_vgrid, VelocityGrid& d_vgrid)
-{
-	d_vgrid = h_vgrid;
-
-
-	cudaMalloc ((void **) &d_vgrid.u_index, h_vgrid.n_pnt * sizeof (float));
-	cudaMemcpy (d_vgrid.u_index, h_vgrid.u_index, h_vgrid.n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
-
-	cudaMalloc ((void **) &d_vgrid.v_index, h_vgrid.n_pnt * sizeof (float));
-	cudaMemcpy (d_vgrid.v_index, h_vgrid.v_index, h_vgrid.n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
-
-	cudaMalloc ((void **) &d_vgrid.w_index, h_vgrid.n_pnt * sizeof (float));
-	cudaMemcpy (d_vgrid.w_index, h_vgrid.w_index, h_vgrid.n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
-
-	cudaMalloc ((void **) &d_vgrid.u, h_vgrid.n_u * sizeof (float));
-	cudaMemcpy (d_vgrid.u, h_vgrid.u, h_vgrid.n_u * sizeof(float), cudaMemcpyHostToDevice); 
-
-	cudaMalloc ((void **) &d_vgrid.w, h_vgrid.n_w * sizeof (float));
-	cudaMemcpy (d_vgrid.w, h_vgrid.w, h_vgrid.n_w * sizeof(float), cudaMemcpyHostToDevice); 
-
-	cudaMalloc ((void **) &d_vgrid.v, h_vgrid.n_v * sizeof (float));
-	cudaMemcpy (d_vgrid.v, h_vgrid.v, h_vgrid.n_v * sizeof(float), cudaMemcpyHostToDevice); 
-}
-
-
-void free_host_velocity_grid (VelocityGrid& vgrid)
-{
-}
-
-void free_device_velocity_grid (VelocityGrid& vgrid)
-{
-}

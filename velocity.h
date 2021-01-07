@@ -6,10 +6,11 @@
  */
 
 #ifndef VELOCITY_H_
-
+#define VELOCITY_H_
 
 #include "common.hpp"
 #include "velocity_grid.hpp"
+#include "options.hpp"
 
 #define N_X 16
 #define N_Y 16
@@ -17,7 +18,6 @@
 #define N_YZ (N_Y*N_Z) 
 
 #define NP_X 256
-  
 
 #define XI_X(v)    (v)
 #define XI_Y(v)    (&((v)[opts.nxyz]))
@@ -36,23 +36,8 @@
 
 #define ERR 1.0e-10
 
-#include "options.hpp"
-
-
-//void init_velocity_grid (VelocityGrid&, Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
-
-//void init_device_velocity_grid (const VelocityGrid&, VelocityGrid&);
-
-
-//void free_device_velocity_grid (VelocityGrid&); 
-//void free_host_velocity_grid (VelocityGrid&); 
-
 void free_g_params (int ** h_g_params, int ** d_g_params);
 
 void init_correction_array (float ** correction_array, const DeviceVelocityGrid&, const Options& opts);
-
-
-#define VELOCITY_H_
-
 
 #endif /* VELOCITY_H_ */
