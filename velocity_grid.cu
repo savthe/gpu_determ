@@ -44,6 +44,19 @@ VelocityGrid VelocityGrid::device_clone() const
 	return dg;
 }
 
+VelocityGrid::~VelocityGrid()
+{
+	/*
+	if(!u) return;
+	delete[] u;
+	delete[] v;
+	delete[] w;
+	delete[] u_index;
+	delete[] v_index;
+	delete[] w_index;
+	*/
+}
+
 void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R)
 {
   
