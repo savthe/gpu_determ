@@ -29,29 +29,6 @@ __global__ void reset_float_array (float * float_array,
       float_array[index] = 0.;
 }
 
-/*
-__global__ void gather_frequency (float * to,
-				  float * from)
-{
-  __shared__ float buf[N_YZ];
-  register int i, i1;
-
-
-  for (i = threadIdx.x; i < N_YZ; i+= blockDim.x)
-    buf[i] = 0.0f;
-  
-
-  for (i = threadIdx.x; i < N_YZ; i += blockDim.x)
-    for (i1 = 0; i1 < N_X; i1++)
-      buf[i] += from[(i1 * N_X + blockIdx.x) * N_YZ + i];
-
-  for (i = threadIdx.x; i < N_YZ; i += blockDim.x)
-    to[blockIdx.x * N_YZ + i] = buf[i];
-  
-}
-*/
-
-
 __global__ void evolve_direct_colisions (float * f, float * b, float * direct_integral, const Options opts)
 {
 	__shared__ float b_shared[N_YZ];
@@ -77,14 +54,14 @@ __global__ void evolve_direct_colisions (float * f, float * b, float * direct_in
 
 		__syncthreads ();
 
-		for (int j1 = 0, index1 = 0; j1 < N_Y; j1++) 
-			for (int k1 = 0; k1 < N_Z; k1++, index1++) 
+		for (int j1 = 0, index1 = 0; j1 < opts.ny; j1++) 
+			for (int k1 = 0; k1 < opts.nz; k1++, index1++) 
 			{
 				const int16_t gj = (j > j1) ? j - j1 : j1 - j;
 				const int16_t gk = (k > k1) ? k - k1 : k1 - k;
 
-				direct_integral[(i * N_YZ + index_jk) * opts.npx + threadIdx.x] += 
-				b_shared[gj * N_Z + gk] * f[(i1 * N_YZ + index1) * opts.npx + threadIdx.x];
+				direct_integral[(i * opts.nyz + index_jk) * opts.npx + threadIdx.x] += 
+				b_shared[gj * opts.nz + gk] * f[(i1 * opts.nyz + index1) * opts.npx + threadIdx.x];
 			}
     
 #if 0

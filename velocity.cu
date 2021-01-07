@@ -52,15 +52,14 @@ __global__ void fill_correction_array (float * correction_array, const DeviceVel
 
 void init_correction_array (float ** correction_array, const DeviceVelocityGrid& vgrid, const Options& opts)
 {
+  cudaMalloc ((void **) correction_array, opts.nxyz * 14 * sizeof (float));
+
   dim3 db, dg;
-
-  cudaMalloc ((void **) correction_array, 
-	      opts.nxyz * 14 * sizeof (float));
-
   db.x = opts.nx;
   db.y = 1;
   db.x = 512;
   db.y = 1;
   db.z = 1;
+
   fill_correction_array <<<dg, db>>> (*correction_array, vgrid, opts);
 }

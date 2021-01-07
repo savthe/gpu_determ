@@ -124,9 +124,9 @@ void print_moments()
 {
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 	float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
-	for (int i = 0, index = 0; i < N_X; i++) 
-	for (int j = 0; j < N_Y; j++)
-	for (int k = 0; k < N_Z; k++, index++) 
+	for (int i = 0, index = 0; i < opts.nx; i++) 
+	for (int j = 0; j < opts.ny; j++)
+	for (int k = 0; k < opts.nz; k++, index++) 
 	{
 		float ci = -h_f[index] * h_direct_integral[index] + h_inverse_integral[index];
 		float u = vgrid.u[i];
@@ -149,9 +149,9 @@ void print_results()
 	for (int index = 0; index < opts.nxyz; index ++) 
 		if (vgrid.u_index[index] < vgrid.n_u/2 && vgrid.v_index[index] < vgrid.n_v/2 && vgrid.w_index[index] < vgrid.n_w/2)
 			fresults << index << ' ' // index
-			<< index / N_YZ << ' ' // I
-			<< (index % N_YZ) / N_Z << ' ' // J
-	   		<< (index % N_YZ) % N_Z << ' ' // K
+			<< index / opts.nyz << ' ' // I
+			<< (index % opts.nyz) / N_Z << ' ' // J
+	   		<< (index % opts.nyz) % N_Z << ' ' // K
 			<< h_f[index] << ' ' // F
 			<< h_direct_integral[index] << ' ' // DC
 			<< h_inverse_integral[index] << ' ' // IC
