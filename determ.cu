@@ -56,7 +56,6 @@ int main()
 	init_correction_array (&correction_array, vgrid.device(), opts);
   	init_matrices (vgrid.device(), &b, &a, opts);
 
-
 	GpuTimer timer;
 	timer.start();
 
@@ -91,7 +90,6 @@ int main()
 
 	print_results();
 	print_moments();
-
 
 	std::cout << "COLLISION INTEGRAL EVALUATION TOOK " << timer.elapsed() << " MS." << std::endl;
 

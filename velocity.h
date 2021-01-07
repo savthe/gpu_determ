@@ -41,15 +41,13 @@
 
 //void init_velocity_grid (VelocityGrid&, Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 
-void init_device_velocity_grid (const VelocityGrid&, VelocityGrid&);
+//void init_device_velocity_grid (const VelocityGrid&, VelocityGrid&);
 
 
-void free_device_velocity_grid (VelocityGrid&); 
-void free_host_velocity_grid (VelocityGrid&); 
+//void free_device_velocity_grid (VelocityGrid&); 
+//void free_host_velocity_grid (VelocityGrid&); 
 
-void free_g_params (int ** h_g_params,
-		    int ** d_g_params);
-
+void free_g_params (int ** h_g_params, int ** d_g_params);
 
 void init_correction_array (float ** correction_array, const DeviceVelocityGrid&, const Options& opts);
 
