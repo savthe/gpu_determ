@@ -8,7 +8,7 @@
 #include <iostream>
 #include <cuda.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "velocity.h"
 #include "compute_matrix.h"
@@ -18,6 +18,10 @@
 #include "gputimer.hpp"
 
 void clean();
+void init_f();
+void init_integrals();
+void print_results();
+void print_moments();
 
 Options options;
 const Options& opts = options;
@@ -33,6 +37,69 @@ float* b;
 float* correction_array;
 
 VelocityGrid vgrid;
+
+int main()
+{
+	load_options(options, "gpu.conf");
+	print_options(options);
+
+	/* VELOCITY GRID INITIALIZATION */
+	const Vector3i n_points(opts.nx, opts.ny, opts.nz);
+	const Vector3f v_min(-5.0, -5.0, -5.00);
+	const Vector3f v_max(5.0, 5.0, 5.0);
+	const float R = 16.5; // RADIUS OF SPHERE
+	/*  VELOCITY GRID INITIALIZATION */
+
+	vgrid.init(n_points, v_min, v_max, R);
+	init_f();
+	init_integrals();
+	init_correction_array (&correction_array, vgrid.device(), opts);
+  	init_matrices (vgrid.device(), &b, &a, opts);
+
+	float h_time = 0;
+	float * d_time;
+	cudaMalloc ((void **) &d_time,  sizeof (float));
+	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
+
+	GpuTimer timer;
+	timer.start();
+
+#if 1  
+	constexpr int out_step = 5;
+	
+	for (int step = 0; step <= 0; ++step) 
+	{
+		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
+		std::cout << "STEP=" << step << ",  TIME=" << h_time << std::endl;
+		if (step % out_step == 0) 
+			cudaMemcpy (h_f, d_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyDeviceToHost);
+
+		evolve_colisions (d_f, d_direct_integral, d_inverse_integral, b, a, correction_array, opts);
+		relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5, d_time, opts);
+	}
+#endif
+
+	cudaFree(d_time);
+  
+	cudaThreadSynchronize ();
+
+	timer.stop();
+
+	std::cout << "COLLISIONS EVOLVED: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
+
+	cudaMemcpy (h_direct_integral, d_direct_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
+	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
+
+	print_results();
+	print_moments();
+
+
+	std::cout << "COLLISION INTEGRAL EVALUATION TOOK " << timer.elapsed() << " MS." << std::endl;
+
+	clean();
+
+	std::cout << "END_PROGRAM: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
+}
 
 void init_f()
 {
@@ -104,69 +171,6 @@ void init_integrals()
 	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
 }
 
-int main()
-{
-	load_options(options, "gpu.conf");
-	print_options(options);
-
-	/* VELOCITY GRID INITIALIZATION */
-	const Vector3i n_points(opts.nx, opts.ny, opts.nz);
-	const Vector3f v_min(-5.0, -5.0, -5.00);
-	const Vector3f v_max(5.0, 5.0, 5.0);
-	const float R = 16.5; // RADIUS OF SPHERE
-	/*  VELOCITY GRID INITIALIZATION */
-
-	vgrid.init(n_points, v_min, v_max, R);
-	init_f();
-	init_integrals();
-	init_correction_array (&correction_array, vgrid.device(), opts);
-  	init_matrices (vgrid.device(), &b, &a, opts);
-
-
-	float h_time = 0;
-	float * d_time;
-	cudaMalloc ((void **) &d_time,  sizeof (float));
-	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
-
-	GpuTimer timer;
-	timer.start();
-
-#if 1  
-	constexpr int out_step = 5;
-	
-	for (int step = 0; step <= 0; ++step) 
-	{
-		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
-		std::cout << "STEP=" << step << ",  TIME=" << h_time << std::endl;
-		if (step % out_step == 0) 
-			cudaMemcpy (h_f, d_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyDeviceToHost);
-
-		evolve_colisions (d_f, d_direct_integral, d_inverse_integral, b, a, correction_array, opts);
-		relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5, d_time, opts);
-	}
-#endif
-
-	cudaFree(d_time);
-  
-	cudaThreadSynchronize ();
-
-	timer.stop();
-
-	std::cout << "COLLISIONS EVOLVED: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
-
-	cudaMemcpy (h_direct_integral, d_direct_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
-	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
-
-	print_results();
-	print_moments();
-
-
-	std::cout << "COLLISION INTEGRAL EVALUATION TOOK " << timer.elapsed() << " MS." << std::endl;
-
-	clean();
-
-	std::cout << "END_PROGRAM: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
-}
 
 void clean()
 {
