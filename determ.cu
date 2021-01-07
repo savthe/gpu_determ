@@ -5,6 +5,7 @@
  *      Author: serge
  */
 #include <fstream>
+#include <iostream>
 #include <cuda.h>
 #include <stdio.h>
 #include <assert.h>
@@ -38,6 +39,22 @@ float* init_f(const VelocityGrid& h_vgrid)
 			}
 
 	return f;
+}
+
+void print_results(const VelocityGrid& g, const float* f, const float* direct_integral, const float* inverse_integral)
+{
+	std::ofstream fresults("results.out");
+	for (int index = 0; index < opts.nxyz; index ++) 
+		if (g.u_index[index] < g.n_u/2 && g.v_index[index] < g.n_v/2 && g.w_index[index] < g.n_w/2)
+			fresults << index << ' ' // index
+			<< index / N_YZ << ' ' // I
+			<< (index % N_YZ) / N_Z << ' ' // J
+	   		 << (index % N_YZ) % N_Z << ' ' // K
+			<< f[index] << ' ' // F
+			<< direct_integral[index] << ' ' // DC
+			<< inverse_integral[index] << ' ' // IC
+	   		<< - f[index]*direct_integral[index] + inverse_integral[index] << ' ' // CI
+	   		<< -f[index]*direct_integral[index]/inverse_integral[index]+1.0 << std::endl; //ACCURACY
 }
 
 int main()
@@ -89,7 +106,7 @@ int main()
 	for (int step = 0; step <= 0; ++step) 
 	{
 		cudaMemcpy (&h_time, d_time, sizeof (float), cudaMemcpyDeviceToHost);
-		printf ("STEP=%d, TIME=%f\n", step, time);
+		std::cout << "STEP=" << step << ",  TIME=" << h_time << std::endl;
 		if (step % out_step == 0) 
 			cudaMemcpy (h_f, d_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyDeviceToHost);
 
@@ -102,29 +119,16 @@ int main()
 
 	timer.stop();
 
-	printf ("COLLISIONS EVOLVED: %s\n", cudaGetErrorString (cudaGetLastError ()));
+	std::cout << "COLLISIONS EVOLVED: " << cudaGetErrorString (cudaGetLastError ()) << std::endl;
 
 	cudaMemcpy (h_direct_integral, d_direct_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 
-	std::ofstream fresults("results.out");
 
 #if 1
-  /* PRINTING THE RESULTS OF COMPUTATIONS */ 
-	for (int index = 0; index < opts.nxyz; index ++) 
-		if (h_vgrid.u_index[index] < h_vgrid.n_u/2 && h_vgrid.v_index[index] < h_vgrid.n_v/2 && h_vgrid.w_index[index] < h_vgrid.n_w/2)
-			fresults << index << ' ' // index
-			<< index / N_YZ << ' ' // I
-			<< (index % N_YZ) / N_Z << ' ' // J
-	   		 << (index % N_YZ) % N_Z << ' ' // K
-			<< h_f[index] << ' ' // F
-			<< h_direct_integral[index] << ' ' // DC
-			<< h_inverse_integral[index] << ' ' // IC
-	   		<< - h_f[index]*h_direct_integral[index] + h_inverse_integral[index] << ' ' // CI
-	   		<< -h_f[index]*h_direct_integral[index]/h_inverse_integral[index]+1.0 << std::endl; //ACCURACY
-  /* PRINTING THE RESULTS OF COMPUTATIONS */ 
+	print_results(h_vgrid, h_f, h_direct_integral, h_inverse_integral);
+
 #endif
-  fresults.close();
 
   /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 	float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
