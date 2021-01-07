@@ -13,7 +13,6 @@ bool check_if_point_is_in_domain (Vector3i n_points, Vector3f v_min, Vector3f v_
 	return R <= 0 || u*u + v*v + w*w < R*R;
 }
 
-
 VelocityGrid::VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r)
 {
 	init(n_points, v_min, v_max, r);
@@ -108,7 +107,6 @@ void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float
 	d_w = (max_w - min_w) / n_w;
 
 	d3v = d_u*d_v*d_w;
-  
   
 	for (int i = 0; i < n_u; i++) u[i] = min_u + d_u * (2.*i+1.)/2.;
 	for (int i = 0; i < n_v; i++) v[i] = min_v + d_v * (2.*i+1.)/2.;

@@ -56,15 +56,15 @@ int main()
 	init_correction_array (&correction_array, vgrid.device(), opts);
   	init_matrices (vgrid.device(), &b, &a, opts);
 
-	float h_time = 0;
-	float * d_time;
-	cudaMalloc ((void **) &d_time,  sizeof (float));
-	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
 
 	GpuTimer timer;
 	timer.start();
 
 #if 1  
+	float h_time = 0;
+	float * d_time;
+	cudaMalloc ((void **) &d_time,  sizeof (float));
+	cudaMemcpy (d_time, &h_time, sizeof (float), cudaMemcpyHostToDevice);
 	constexpr int out_step = 5;
 	
 	for (int step = 0; step <= 0; ++step) 
@@ -77,9 +77,8 @@ int main()
 		evolve_colisions (d_f, d_direct_integral, d_inverse_integral, b, a, correction_array, opts);
 		relax_f (d_f, d_direct_integral, d_inverse_integral, 0.5, d_time, opts);
 	}
-#endif
-
 	cudaFree(d_time);
+#endif
   
 	cudaThreadSynchronize ();
 

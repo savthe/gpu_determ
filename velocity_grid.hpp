@@ -5,11 +5,7 @@
 
 class VelocityGridBase
 {
-	//VelocityGridBase(const VelocityGridBase&) = delete;
-	//VelocityGridBase& operator=(const VelocityGridBase&) = delete;
-
 public:
-	VelocityGridBase(){}
 	virtual ~VelocityGridBase() {};
 
 	int n_pnt = 0;
@@ -41,8 +37,9 @@ class VelocityGrid: public VelocityGridBase
 public:
 	VelocityGrid() {}
 	VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r);
-	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 	virtual ~VelocityGrid();
+
+	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 	DeviceVelocityGrid& device() const;
 };
 
@@ -50,7 +47,9 @@ class DeviceVelocityGrid: public VelocityGridBase
 {
 	friend class VelocityGrid;
 	DeviceVelocityGrid(const VelocityGrid&);
+
 public:
+	// can't use destructor because we pass the copy of object to kernel
 	void free();
 };
 
