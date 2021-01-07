@@ -20,9 +20,12 @@
 Options options;
 const Options& opts = options;
 
-float* init_f(const VelocityGrid& h_vgrid)
+float* h_f;
+float* d_f;
+
+void init_f(const VelocityGrid& h_vgrid)
 {
-	float * f = new float[opts.nxyz*opts.npx];
+	h_f = new float[opts.nxyz*opts.npx];
 	const float u1 = 1.75;
 	const float v1 = 0.25;
 
@@ -35,10 +38,31 @@ float* init_f(const VelocityGrid& h_vgrid)
 				float w = h_vgrid.w[k];
 	
 				for (int ix = 0; ix < opts.npx; ix++) 
-					f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1) - (v-v1)*(v-v1) - w*w); 
+					h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1) - (v-v1)*(v-v1) - w*w); 
 			}
+}
 
-	return f;
+void print_moments(const VelocityGrid& g, const float* f, const float* direct_integral, const float* inverse_integral)
+{
+  /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
+	float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
+	for (int i = 0, index = 0; i < N_X; i++) 
+	for (int j = 0; j < N_Y; j++)
+	for (int k = 0; k < N_Z; k++, index++) 
+	{
+		float ci = - f[index] * direct_integral[index] + inverse_integral[index];
+		float u = g.u[i];
+		float v = g.v[j];
+		float w = g.w[k];
+		mom0 += ci * g.d3v;
+		momU += ci * u * g.d3v;
+		momV += ci * v * g.d3v;
+		momW += ci * w * g.d3v;
+		mom2 += ci * (u*u + v*v + w*w) * g.d3v;
+	}
+
+	printf ("M0=%e, MU=%e, MV=%e, MW=%e, M2=%e\n", mom0, momU, momV, momW, mom2);
+  /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 }
 
 void print_results(const VelocityGrid& g, const float* f, const float* direct_integral, const float* inverse_integral)
@@ -49,12 +73,16 @@ void print_results(const VelocityGrid& g, const float* f, const float* direct_in
 			fresults << index << ' ' // index
 			<< index / N_YZ << ' ' // I
 			<< (index % N_YZ) / N_Z << ' ' // J
-	   		 << (index % N_YZ) % N_Z << ' ' // K
+	   		<< (index % N_YZ) % N_Z << ' ' // K
 			<< f[index] << ' ' // F
 			<< direct_integral[index] << ' ' // DC
 			<< inverse_integral[index] << ' ' // IC
-	   		<< - f[index]*direct_integral[index] + inverse_integral[index] << ' ' // CI
+	   		<< -f[index]*direct_integral[index] + inverse_integral[index] << ' ' // CI
 	   		<< -f[index]*direct_integral[index]/inverse_integral[index]+1.0 << std::endl; //ACCURACY
+}
+
+void init_integrals()
+{
 }
 
 int main()
@@ -72,7 +100,7 @@ int main()
 	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
 	VelocityGrid d_vgrid = h_vgrid.device_clone();
 
-	float * h_f = init_f(h_vgrid);
+	init_f(h_vgrid);
 	float * d_f;
 	cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
 	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
@@ -99,6 +127,7 @@ int main()
   
 	GpuTimer timer;
 	timer.start();
+
 #if 1  
   
 	constexpr int out_step = 5;
@@ -125,30 +154,9 @@ int main()
 	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 
 
-#if 1
 	print_results(h_vgrid, h_f, h_direct_integral, h_inverse_integral);
+	print_moments(h_vgrid, h_f, h_direct_integral, h_inverse_integral);
 
-#endif
-
-  /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
-	float mom0 = 0, momU = 0, momV = 0, momW = 0, mom2 = 0;
-	for (int i = 0, index = 0; i < N_X; i++) 
-	for (int j = 0; j < N_Y; j++)
-	for (int k = 0; k < N_Z; k++, index++) 
-	{
-		float ci = - h_f[index] * h_direct_integral[index] + h_inverse_integral[index];
-		float u = h_vgrid.u[i];
-		float v = h_vgrid.v[j];
-		float w = h_vgrid.w[k];
-		mom0 += ci * h_vgrid.d3v;
-		momU += ci * u * h_vgrid.d3v;
-		momV += ci * v * h_vgrid.d3v;
-		momW += ci * w * h_vgrid.d3v;
-		mom2 += ci * (u*u + v*v + w*w) * h_vgrid.d3v;
-	}
-
-	printf ("M0=%e, MU=%e, MV=%e, MW=%e, M2=%e\n", mom0, momU, momV, momW, mom2);
-  /* EVALUATION OF MOMENTS OF COILLISION INTEGRAL */ 
 
   printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", timer.elapsed());
 
