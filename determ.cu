@@ -4,7 +4,6 @@
  *  Created on: 17.02.2010
  *      Author: serge
  */
-
 #include <fstream>
 #include <cuda.h>
 #include <stdio.h>
@@ -28,13 +27,14 @@ float* init_f(const VelocityGrid& h_vgrid)
 
 	for (int i = 0, index = 0; i < opts.nx; i++) 
 		for (int j = 0; j < opts.ny; j++) 
-			for (int k = 0; k < opts.nz; k++, index++) {
+			for (int k = 0; k < opts.nz; k++, index++) 
+			{
 				float u = h_vgrid.u[i];
 				float v = h_vgrid.v[j];
 				float w = h_vgrid.w[k];
 	
 				for (int ix = 0; ix < opts.npx; ix++) 
-					f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1)  - (v-v1)*(v-v1) - w*w); 
+					f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1) - (v-v1)*(v-v1) - w*w); 
 			}
 
 	return f;

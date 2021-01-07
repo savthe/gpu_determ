@@ -15,6 +15,8 @@
 #include <time.h>
 #include <device_functions.h>
 #include "options.hpp"
+#include <thrust/fill.h>
+#include <thrust/device_ptr.h>
 
 __global__ void reset_float_array (float * float_array,
 				   int size)
@@ -50,49 +52,41 @@ __global__ void gather_frequency (float * to,
 */
 
 
-__global__ void evolve_direct_colisions (float * f,
-					 float * b,
-					 float * direct_integral, 
-					 const Options opts)
+__global__ void evolve_direct_colisions (float * f, float * b, float * direct_integral, const Options opts)
 {
-  int index, index_jk;
-  short int i, j, k, i1, gi;
-  //  __shared__ float f_shared[N_YZ];
-  __shared__ float b_shared[N_YZ];
-  //  __shared__ float integral_shared[N_YZ];
+	__shared__ float b_shared[N_YZ];
 
-  i = blockIdx.x;
-  index_jk = blockIdx.y;
-  j = index_jk / N_Z;
-  k = index_jk % N_Z;
+	const int16_t i = blockIdx.x;
+	const int index_jk = blockIdx.y;
+	const int16_t j = index_jk / N_Z;
+	const int16_t k = index_jk % N_Z;
 
-  for (i1 = 0; i1 < opts.nx; i1++) {
-    short int index1, j1, k1;
-    __syncthreads();
+	for (int i1 = 0; i1 < opts.nx; i1++) 
+	{
+		__syncthreads();
 
 #if 0
     for (index = threadIdx.x; index < N_YZ; index+= blockDim.x)
       f_shared[index] = f[i1 * N_YZ + index];
 #endif
 
-    gi = (i > i1) ? i - i1 : i1 - i;
+		const int16_t gi = (i > i1) ? i - i1 : i1 - i;
 
-    for (index = threadIdx.x; index < N_YZ; index+= blockDim.x)
-      b_shared[index] = b[gi * N_YZ + index];
+		for (int index = threadIdx.x; index < N_YZ; index+= blockDim.x) 
+			b_shared[index] = b[gi * N_YZ + index];
 
-    __syncthreads ();
+		__syncthreads ();
 
-    for (j1 = 0, index1 = 0; j1 < N_Y; j1++) {
-      for (k1 = 0; k1 < N_Z; k1++, index1++) {
-	short int gj, gk;
+		for (int j1 = 0, index1 = 0; j1 < N_Y; j1++) 
+			for (int k1 = 0; k1 < N_Z; k1++, index1++) 
+			{
+				const int16_t gj = (j > j1) ? j - j1 : j1 - j;
+				const int16_t gk = (k > k1) ? k - k1 : k1 - k;
 
-	gj = (j > j1) ? j - j1 : j1 - j;
-	gk = (k > k1) ? k - k1 : k1 - k;
-
-	direct_integral[(i * N_YZ + index_jk) * opts.npx + threadIdx.x] += b_shared[gj * N_Z + gk] * 
-	  f[(i1 * N_YZ + index1) * opts.npx + threadIdx.x];
-      }
-    }
+				direct_integral[(i * N_YZ + index_jk) * opts.npx + threadIdx.x] += 
+				b_shared[gj * N_Z + gk] * f[(i1 * N_YZ + index1) * opts.npx + threadIdx.x];
+			}
+    
 #if 0
     direct_integral[(i + i1 * N_X) * N_YZ + index] =
       integral_shared[index];
@@ -101,34 +95,8 @@ __global__ void evolve_direct_colisions (float * f,
 }
 
 
-/*
-__global__ void gather_inverse_integral (float * to,
-					 float * from)
-{
-  __shared__ float buf[N_YZ];
-  register int i, i1;
-
-
-  for (i = threadIdx.x; i < N_YZ; i+= blockDim.x)
-    buf[i] = 0.0f;
-  
-
-  for (i = threadIdx.x; i < N_YZ; i += blockDim.x)
-    for (i1 = 0; i1 < N_X * (N_X >> 1); i1++)
-      buf[i] += from[(i1 * N_X + blockIdx.x) * N_YZ + i];
-
-  for (i = threadIdx.x; i < N_YZ; i += blockDim.x)
-    to[blockIdx.x * N_YZ + i] = buf[i];
-}
-*/
-
-__global__ void evolve_inverse_colisions (float * f,
-					  float * a,
-					  float * inverse_integral,
-					  short int in1,
-					  short int jn1,
-					  short int kn1,
-					  const Options opts)
+__global__ void evolve_inverse_colisions (float * f, float * a, float * inverse_integral,
+					  short int in1, short int jn1, short int kn1, const Options opts)
 {
   short int i, i1, gi, in, il, il1;
   __shared__ float a_shared[N_YZ];
@@ -202,9 +170,7 @@ __global__ void evolve_inverse_colisions (float * f,
 
 	inverse_integral[(i * N_X + index1) * opts.npx + threadIdx.x] += integral_shared[threadIdx.x];
 #elif 1
-	float tmp = 
-	  (l_index == N_YZ || l1_index == N_YZ) ? 0.0f :
-	  a_shared[a_index] * 
+	float tmp = (l_index == N_YZ || l1_index == N_YZ) ? 0.0f : a_shared[a_index] * 
 	  (f[(il * N_YZ + l_index)*opts.npx + threadIdx.x] * f[(il1 * N_YZ + l1_index)*opts.npx + threadIdx.x] + // accumulating the collision 
 	   f[(il * N_YZ + l1_index)*opts.npx + threadIdx.x] * f[(il1 * N_YZ + l_index)*opts.npx + threadIdx.x]); // integral
 	
@@ -212,8 +178,7 @@ __global__ void evolve_inverse_colisions (float * f,
 	l1_index = (jl1 >= 0  && kl < N_Z) ? (jl1 >> 1) * N_Z + kl : N_YZ;
 
 	tmp += 
-	  (l_index == N_YZ || l1_index == N_YZ) ? 0.0f :
-	  a_shared[a_index] * 
+	  (l_index == N_YZ || l1_index == N_YZ) ? 0.0f : a_shared[a_index] * 
 	  (f[(il * N_YZ + l_index)*opts.npx + threadIdx.x] * f[(il1 * N_YZ + l1_index)*opts.npx + threadIdx.x] + // accumulating the collision 
 	   f[(il * N_YZ + l1_index)*opts.npx + threadIdx.x] * f[(il1 * N_YZ + l_index)*opts.npx + threadIdx.x]); // integral
 
@@ -648,13 +613,15 @@ void evolve_colisions (float * f,
   db1.y = 1;
   db1.z = 1;
 
+
+  //thrust::device_ptr<float> t_di(direct_integral);
+  //thrust::fill(t_di, t_di + opts.npx*opts.nxyz, 0);
   reset_float_array <<<1024, 512>>> (direct_integral, opts.npx * opts.nxyz);
   reset_float_array <<<1024, 512>>> (direct_t, opts.npx * opts.nxyz);
   reset_float_array <<<1024, 512>>> (inverse_t, opts.npx * opts.nxyz);
   reset_float_array <<<1024, 512>>> (ft, opts.npx * opts.nxyz);
   cudaThreadSynchronize ();
-  printf ("RESET DONE!, %s\n", 
-	  cudaGetErrorString (cudaGetLastError ()));
+  printf ("RESET DONE!, %s\n", cudaGetErrorString (cudaGetLastError ()));
 
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -797,10 +764,7 @@ void evolve_colisions (float * f,
   db1.x = 512;
   db1.y = 1;
   db1.z = 1;
-  correct_frequency <<<dg1, db1>>>(direct_t, 
-				   correction_array,
-				   X, 
-				   opts);
+  correct_frequency <<<dg1, db1>>>(direct_t, correction_array, X, opts);
   cudaThreadSynchronize ();
   printf ("CORRECTION DONE!, %s\n", 
 	  cudaGetErrorString (cudaGetLastError ()));
