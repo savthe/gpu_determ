@@ -19,7 +19,7 @@ VelocityGrid::VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, fl
 	init(n_points, v_min, v_max, r);
 }
 
-const DeviceVelocityGrid& VelocityGrid::device() const
+DeviceVelocityGrid& VelocityGrid::device() const
 {
 	static DeviceVelocityGrid g(*this);
 	return g;
@@ -57,7 +57,19 @@ VelocityGrid::~VelocityGrid()
 	delete[] u_index;
 	delete[] v_index;
 	delete[] w_index;
+	device().free();
 }
+
+void DeviceVelocityGrid::free()
+{
+	cudaFree(u);
+	cudaFree(v);
+	cudaFree(w);
+	cudaFree(u_index);
+	cudaFree(v_index);
+	cudaFree(w_index);
+}
+
 
 void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R)
 {

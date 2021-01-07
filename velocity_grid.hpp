@@ -43,7 +43,7 @@ public:
 	VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r);
 	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
 	virtual ~VelocityGrid();
-	const DeviceVelocityGrid& device() const;
+	DeviceVelocityGrid& device() const;
 };
 
 class DeviceVelocityGrid: public VelocityGridBase
@@ -51,7 +51,7 @@ class DeviceVelocityGrid: public VelocityGridBase
 	friend class VelocityGrid;
 	DeviceVelocityGrid(const VelocityGrid&);
 public:
-//	void free();
+	void free();
 };
 
 /*
