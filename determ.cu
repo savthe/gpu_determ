@@ -22,6 +22,10 @@ const Options& opts = options;
 
 float* h_f;
 float* d_f;
+float* h_inverse_integral;
+float* d_inverse_integral;
+float* h_direct_integral;
+float* d_direct_integral;
 
 void init_f(const VelocityGrid& h_vgrid)
 {
@@ -40,6 +44,9 @@ void init_f(const VelocityGrid& h_vgrid)
 				for (int ix = 0; ix < opts.npx; ix++) 
 					h_f[index * opts.npx + ix] = exp (-(u-u1)*(u-u1) - (v-v1)*(v-v1) - w*w); 
 			}
+
+	cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
+	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
 }
 
 void print_moments(const VelocityGrid& g, const float* f, const float* direct_integral, const float* inverse_integral)
@@ -83,6 +90,11 @@ void print_results(const VelocityGrid& g, const float* f, const float* direct_in
 
 void init_integrals()
 {
+	h_inverse_integral = new float[opts.nxyz*opts.npx];
+	h_direct_integral = new float[opts.nxyz*opts.npx];
+
+	cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
+	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
 }
 
 int main()
@@ -101,9 +113,7 @@ int main()
 	VelocityGrid d_vgrid = h_vgrid.device_clone();
 
 	init_f(h_vgrid);
-	float * d_f;
-	cudaMalloc ((void **) &d_f, opts.nxyz * opts.npx * sizeof (float));
-	cudaMemcpy (d_f, h_f, opts.nxyz * opts.npx * sizeof (float), cudaMemcpyHostToDevice);
+	init_integrals();
 
 	float * correction_array;
 	init_correction_array (&correction_array, d_vgrid, opts);
@@ -112,12 +122,6 @@ int main()
 	float * b;
   	init_matrices (d_vgrid, &b, &a, opts);
 
-	float * h_inverse_integral = new float[opts.nxyz*opts.npx];
-	float * h_direct_integral = new float[opts.nxyz*opts.npx];
-	float * d_inverse_integral;
-	float * d_direct_integral;
-	cudaMalloc ((void **) &d_direct_integral, opts.nxyz * opts.npx * sizeof (float));
-	cudaMalloc ((void **) &d_inverse_integral, opts.nxyz * opts.npx * sizeof (float));
 
 	float h_time = 0;
 	float * d_time;

@@ -3,13 +3,19 @@
 
 #include "common.hpp"
 
+class VelocityGridBase
+{
+	VelocityGridBase(const VelocityGridBase&) = delete;
+	VelocityGridBase& operator=(const VelocityGridBase&) = delete;
+};
+
 class VelocityGrid
 {
 public:
 	VelocityGrid() {}
 	VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r);
 	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
-	VelocityGrid device_clone();
+	VelocityGrid device_clone() const;
 	int n_pnt;
 	float* w;
 	int n_w;

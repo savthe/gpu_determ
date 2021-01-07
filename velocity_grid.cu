@@ -19,7 +19,7 @@ VelocityGrid::VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, fl
 	init(n_points, v_min, v_max, r);
 }
 
-VelocityGrid VelocityGrid::device_clone() 
+VelocityGrid VelocityGrid::device_clone() const 
 {
 	VelocityGrid dg = *this;
 
