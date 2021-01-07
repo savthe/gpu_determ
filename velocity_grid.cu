@@ -19,34 +19,37 @@ VelocityGrid::VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, fl
 	init(n_points, v_min, v_max, r);
 }
 
-VelocityGrid VelocityGrid::device_clone() const 
+const DeviceVelocityGrid& VelocityGrid::device() const
 {
-	VelocityGrid dg = *this;
+	static DeviceVelocityGrid g(*this);
+	return g;
+}
 
-	cudaMalloc ((void **) &dg.u_index, n_pnt * sizeof (float));
-	cudaMemcpy (dg.u_index, u_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+DeviceVelocityGrid::DeviceVelocityGrid(const VelocityGrid& g):
+	VelocityGridBase(g)
+{
+	cudaMalloc ((void **) &u_index, n_pnt * sizeof (float));
+	cudaMemcpy (u_index, g.u_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
 
-	cudaMalloc ((void **) &dg.v_index, n_pnt * sizeof (float));
-	cudaMemcpy (dg.v_index, v_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+	cudaMalloc ((void **) &v_index, n_pnt * sizeof (float));
+	cudaMemcpy (v_index, g.v_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
 
-	cudaMalloc ((void **) &dg.w_index, n_pnt * sizeof (float));
-	cudaMemcpy (dg.w_index, w_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
+	cudaMalloc ((void **) &w_index, n_pnt * sizeof (float));
+	cudaMemcpy (w_index, g.w_index, n_pnt * sizeof(float), cudaMemcpyHostToDevice); 
 
-	cudaMalloc ((void **) &dg.u, n_u * sizeof (float));
-	cudaMemcpy (dg.u, u, n_u * sizeof(float), cudaMemcpyHostToDevice); 
+	cudaMalloc ((void **) &u, n_u * sizeof (float));
+	cudaMemcpy (u, g.u, n_u * sizeof(float), cudaMemcpyHostToDevice); 
 
-	cudaMalloc ((void **) &dg.w, n_w * sizeof (float));
-	cudaMemcpy (dg.w, w, n_w * sizeof(float), cudaMemcpyHostToDevice); 
+	cudaMalloc ((void **) &w, n_w * sizeof (float));
+	cudaMemcpy (w, g.w, n_w * sizeof(float), cudaMemcpyHostToDevice); 
 
-	cudaMalloc ((void **) &dg.v, n_v * sizeof (float));
-	cudaMemcpy (dg.v, v, n_v * sizeof(float), cudaMemcpyHostToDevice); 
+	cudaMalloc ((void **) &v, n_v * sizeof (float));
+	cudaMemcpy (v, g.v, n_v * sizeof(float), cudaMemcpyHostToDevice); 
 
-	return dg;
 }
 
 VelocityGrid::~VelocityGrid()
 {
-	/*
 	if(!u) return;
 	delete[] u;
 	delete[] v;
@@ -54,7 +57,6 @@ VelocityGrid::~VelocityGrid()
 	delete[] u_index;
 	delete[] v_index;
 	delete[] w_index;
-	*/
 }
 
 void VelocityGrid::init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R)

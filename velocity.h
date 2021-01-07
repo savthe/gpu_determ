@@ -51,7 +51,7 @@ void free_g_params (int ** h_g_params,
 		    int ** d_g_params);
 
 
-void init_correction_array (float ** correction_array, const VelocityGrid&, const Options& opts);
+void init_correction_array (float ** correction_array, const DeviceVelocityGrid&, const Options& opts);
 
 
 #define VELOCITY_H_

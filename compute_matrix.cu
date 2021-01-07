@@ -502,7 +502,7 @@ __device__ float calc_matrix_element (float * float_params,
 }
 #endif
 
-__global__ void store_matrix_elements (const VelocityGrid vgrid, float * b, float * a)
+__global__ void store_matrix_elements (const DeviceVelocityGrid vgrid, float * b, float * a)
 {
   short int index, index1;
 
@@ -561,7 +561,7 @@ __global__ void store_matrix_elements (const VelocityGrid vgrid, float * b, floa
     }
 }
 
-void init_matrices (const VelocityGrid& vgrid, float ** b, float ** a, const Options& opts)
+void init_matrices (const DeviceVelocityGrid& vgrid, float ** b, float ** a, const Options& opts)
 {
 	
   	GpuTimer timer;

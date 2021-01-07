@@ -109,18 +109,17 @@ int main()
 	const float R = 16.5; // RADIUS OF SPHERE
 	/*  VELOCITY GRID INITIALIZATION */
 
-	VelocityGrid h_vgrid(n_points, v_min, v_max, R);
-	VelocityGrid d_vgrid = h_vgrid.device_clone();
+	VelocityGrid vgrid(n_points, v_min, v_max, R);
 
-	init_f(h_vgrid);
+	init_f(vgrid);
 	init_integrals();
 
 	float * correction_array;
-	init_correction_array (&correction_array, d_vgrid, opts);
+	init_correction_array (&correction_array, vgrid.device(), opts);
 
 	float * a;
 	float * b;
-  	init_matrices (d_vgrid, &b, &a, opts);
+  	init_matrices (vgrid.device(), &b, &a, opts);
 
 
 	float h_time = 0;
@@ -158,8 +157,8 @@ int main()
 	cudaMemcpy (h_inverse_integral, d_inverse_integral, opts.nxyz * sizeof (float), cudaMemcpyDeviceToHost);
 
 
-	print_results(h_vgrid, h_f, h_direct_integral, h_inverse_integral);
-	print_moments(h_vgrid, h_f, h_direct_integral, h_inverse_integral);
+	print_results(vgrid, h_f, h_direct_integral, h_inverse_integral);
+	print_moments(vgrid, h_f, h_direct_integral, h_inverse_integral);
 
 
   printf ("COLLISION INTEGRAL EVALUATION TOOK %f MS!\n", timer.elapsed());
@@ -176,8 +175,8 @@ int main()
   cudaFree (b);
   cudaFree (a);
 
-  free_device_velocity_grid (d_vgrid);
-  free_host_velocity_grid (h_vgrid);
+//  free_device_velocity_grid (d_vgrid);
+  //free_host_velocity_grid (h_vgrid);
 
 	printf ("END_PROGRAM: %s\n", 
 	cudaGetErrorString (cudaGetLastError ()));

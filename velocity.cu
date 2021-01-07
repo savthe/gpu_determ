@@ -14,7 +14,7 @@
 
 typedef unsigned int uint;
 
-__global__ void fill_correction_array (float * correction_array, const VelocityGrid vgrid, const Options opts)
+__global__ void fill_correction_array (float * correction_array, const DeviceVelocityGrid vgrid, const Options opts)
 {
   int i, j, k, index, index1;
   float xi_x, xi_y, xi_z, xi_2;
@@ -50,7 +50,7 @@ __global__ void fill_correction_array (float * correction_array, const VelocityG
 }
 
 
-void init_correction_array (float ** correction_array, const VelocityGrid& vgrid, const Options& opts)
+void init_correction_array (float ** correction_array, const DeviceVelocityGrid& vgrid, const Options& opts)
 {
   dim3 db, dg;
 

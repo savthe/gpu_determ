@@ -34,15 +34,26 @@ public:
 	float d3v;
 };
 
+class DeviceVelocityGrid;
+
 class VelocityGrid: public VelocityGridBase
 {
 public:
 	VelocityGrid() {}
 	VelocityGrid(Vector3i n_points, Vector3f v_min, Vector3f v_max, float r);
 	void init(Vector3i n_points, Vector3f v_min, Vector3f v_max, float R);
-	VelocityGrid device_clone() const;
 	virtual ~VelocityGrid();
+	const DeviceVelocityGrid& device() const;
 };
+
+class DeviceVelocityGrid: public VelocityGridBase
+{
+	friend class VelocityGrid;
+	DeviceVelocityGrid(const VelocityGrid&);
+public:
+//	void free();
+};
+
 /*
 typedef struct _VelocityGrid VelocityGrid;
 struct _VelocityGrid {
